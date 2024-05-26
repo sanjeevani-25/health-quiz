@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import environ
 import os
@@ -35,6 +36,7 @@ SECRET_KEY = 'django-insecure-5uc&&!ni(p38&s20hjr$1)7ho%lcn*9!n5ybz&9!rydtl!-i#r
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -48,6 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'roles',
+    'quiz',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
@@ -61,6 +67,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'healthQuiz.urls'
+
+AUTH_USER_MODEL = 'roles.User'
 
 TEMPLATES = [
     {
@@ -93,7 +101,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': env('DATABASE_NAME'),  # Replace with your database name
         'USER': env('DATABASE_USER'),  # Replace with your database user
-        'PASSWORD': env('DATABASE_PASSWORD'),  # Replace with your database password
+        # Replace with your database password
+        'PASSWORD': env('DATABASE_PASSWORD'),
         'HOST': 'localhost',  # Set to your database host, e.g., 'localhost' or an IP address
         'PORT': '3306',  # Default port for MySQL
         'OPTIONS': {
@@ -102,6 +111,11 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -143,3 +157,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+...
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    'USER_ID_FIELD': 'uid'
+}
