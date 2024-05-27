@@ -37,7 +37,7 @@ class User(AbstractUser,PermissionsMixin):
         USER = "USER","User"
         DOCTOR = "DOCTOR", "Doctor"
 
-    type = models.CharField(choices=Types.choices, default=Types.USER, max_length=50)
+    type = models.CharField(choices=Types.choices, max_length=50)
     username= None
     uid = models.UUIDField(primary_key=True , default=uuid.uuid4 , editable=False)
     # created_at = models.DateTimeField(auto_now_add=True)
@@ -46,8 +46,10 @@ class User(AbstractUser,PermissionsMixin):
     last_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=256)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    # role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     archived = models.BooleanField(default=False)
+
+    last_login = models.DateTimeField(auto_now=True)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -56,7 +58,7 @@ class User(AbstractUser,PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD='email'
-    REQUIRED_FIELDS = ['first_name', 'role','password', 'type']
+    REQUIRED_FIELDS = ['first_name','password', 'type']
 
     # groups=[]
     # permissions=[]
