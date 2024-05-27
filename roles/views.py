@@ -35,7 +35,6 @@ class RegisterViewset(ModelViewSet):
         if serializer.is_valid():
             user = serializer.save()
             token = get_tokens_for_user(user)
-            # Correctly combining the token and serializer data into one response dictionary
             response_data = {
                 "token": token,
                 "user": serializer.data
@@ -47,6 +46,7 @@ class RegisterViewset(ModelViewSet):
 class LoginViewset(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    last_login = models.DateTimeField(auto_now=True)
 
     def create(self, request):
         email = request.data.get('email')
@@ -55,8 +55,12 @@ class LoginViewset(ModelViewSet):
         if user is None:
             return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         if user.check_password(password):
+            print(user.last_login)
+            print(self.last_login)
+            user.last_login = self.last_login
+            user.save()
             token = get_tokens_for_user(user)
-            return Response({"token": token, "message": "Login Successful"}, status=status.HTTP_200_OK)
+            return Response({"token": token, "message": "Login Successful", "user":user.type, "uid":user.uid}, status=status.HTTP_200_OK)
         return Response({"message": "Login Failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 

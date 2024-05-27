@@ -41,11 +41,11 @@ class QuizSerializer(serializers.ModelSerializer):
     #     return obj
     
     def validate_created_by(self, value):
-        print(value)
+        # print(value)
         # print(value.has_perm("quiz.add_quiz")==False)
-        if(value.has_perm("quiz.add_quiz")==False):
-        # if value.groups.filter(name='User').exists():
-            raise ValidationError("You are not authorized to create quiz")
+        # if(value.has_perm("quiz.add_quiz")==False):
+        if value.groups.filter(name='User').exists():
+            raise ValidationError("You are not authorized to create / update / delete quiz")
             # return Response({"message":"you are not authorized"})
         # if (value.role == 'User'):
         #     raise ValidationError("You are not authorized to create quiz")
@@ -84,11 +84,15 @@ class QuizSerializer(serializers.ModelSerializer):
         return quiz
 
     def update(self, instance, validated_data):
-        # instance = super().update(instance, validated_data)
         '''
         {'quiz_title': 'quiz 200 updated', 'created_by': <User: 43e69e16-8d0d-44c7-825f-4a53bd820eb5>, 'time_duration': datetime.time(2, 0), 'questions': [{'question_name': 'thsi quiz 200 1 updated?', 'number_of_options': 1, 'options': [{'option_name': 'option111', 'is_correct': True}]}], 'number_of_questions': 1}
         '''
-        print(list(instance.questions.all())[0].uid)
+
+        # user = User.objects.get(email=validated_data['created_by'])
+        # if (user.has_perm('quiz.change_quiz')==False):
+        #     return ValidationError("Update not permitted.")
+        # print(user.is_authenticated==True)
+        # print(list(instance.questions.all())[0].uid)
         questions_data = validated_data.pop('questions')
         questions = instance.questions.all()
         questions = list(questions)

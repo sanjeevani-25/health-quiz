@@ -27,24 +27,32 @@ class QuizViewset(ModelViewSet):
 
 # archive quizes
     def destroy(self, request, pk):
+        if not self.request.user.has_perm('yourapp.delete_quiz'):
+            return Response({"message": "You don't have permission to delete this quiz"}, status=status.HTTP_400_BAD_REQUEST)
         # print(request.data)
+        # print(quiz.created_by)
         quiz = Quiz.objects.get(pk=pk)
+        if request.user!=quiz.created_by:
+            return Response({"message": "You are not authorized to delete this quiz."}, status=status.HTTP_400_BAD_REQUEST)
+        if quiz.archived:
+            return Response({"message": "Quiz already deleted"}, status=status.HTTP_400_BAD_REQUEST)
         quiz.archived = True
         quiz.save()
-        questions_data = request.data['questions']
+        # questions_data = request.data['questions']
+        questions_data = Questions.objects.filter(quiz=pk)
+        # print(Questions.objects.filter(quiz=pk))
         # print(self.queryset.get(pk=pk).archived)
-        for ques_data in questions_data:
-            ques = Questions.objects.get(pk=ques_data['uid'])
-            ques.archived = True
-            ques.save()
-            options_data = ques_data['options']
+        for ques_data in questions_data:    
+            # print(ques_data)
+            ques_data.archived=True
+            ques_data.save()
+            options_data = Options.objects.filter(question=ques_data.uid)
             for option_data in options_data:
-                option = Options.objects.get(pk=option_data['uid'])
-                option.archived = True
-                option.save()
-                # print(option.archived)
+                option_data.archived = True
+                option_data.save()
+        #         # print(option.archived)
 
-        return Response({"message": "destroy method","quiz":quiz},status=status.HTTP_200_OK)
+        return Response({"message": "destroy method","quiz":quiz.uid},status=status.HTTP_200_OK)
 
 # display only non-archievd quizes
     # def get_queryset(self):
@@ -54,7 +62,7 @@ class QuizViewset(ModelViewSet):
         user = User.objects.get(pk=request.user.uid)
         data['created_by'] = user.uid
 
-        print(data)
+        # print(data)
         serializer = QuizSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -64,16 +72,9 @@ class QuizViewset(ModelViewSet):
     def get_queryset(self):
         # Filter quizzes to only those that belong to the authenticated user and are not archived
         # print(self.request.user.uid)
+        if (self.request.user.type=='Admin'):
+            return Quiz.objects.all()
         return Quiz.objects.filter(created_by=self.request.user.uid, archived=False)
-    
-
-    # def retrieve(self, request):
-    #     print(request)
-    #     return super().retrieve(request)
-# doesn't display archived quizes anyway hehe
-    # def retrieve(self, request, pk):
-    #     print(request.data)
-    #     return super().retrieve(request,pk)
 
 
 class OptionViewset(ModelViewSet):
