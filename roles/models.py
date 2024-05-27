@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AbstractUser, Group, PermissionsMixin
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -25,12 +26,18 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class User(AbstractUser):
+class User(AbstractUser,PermissionsMixin):
     ROLE_CHOICES = [
         ("Admin", "ADMIN"),
         ("Doctor", "DOCTOR"),
         ("User", "USER")
     ]
+    class Types(models.TextChoices):
+        ADMIN = "ADMIN", "Admin"
+        USER = "USER","User"
+        DOCTOR = "DOCTOR", "Doctor"
+
+    type = models.CharField(choices=Types.choices, default=Types.USER, max_length=50)
     username= None
     uid = models.UUIDField(primary_key=True , default=uuid.uuid4 , editable=False)
     # created_at = models.DateTimeField(auto_now_add=True)
@@ -49,7 +56,10 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD='email'
-    REQUIRED_FIELDS = ['first_name', 'role','password']
+    REQUIRED_FIELDS = ['first_name', 'role','password', 'type']
+
+    # groups=[]
+    # permissions=[]
 
     objects = UserManager()
 
@@ -60,3 +70,28 @@ class User(AbstractUser):
         # return f"{self.first_name} {self.role}"
         # return str(self.uid)
         return str(self.email)
+
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        print(self.user_permissions)
+        self.user_permissions.clear()
+        print(self.user_permissions)
+        self.assign_group()
+
+    def assign_group(self):
+        # Get or create the groups
+        admin_group, created = Group.objects.get_or_create(name='Admin')
+        doctor_group, created = Group.objects.get_or_create(name='Doctor')
+        user_group, created = Group.objects.get_or_create(name='User')
+
+        # Clear existing groups
+        # self.groups.clear()
+
+        # Assign the user to the correct group based on type
+        if self.type == self.Types.ADMIN:
+            self.groups.add(admin_group)
+        elif self.type == self.Types.DOCTOR:
+            self.groups.add(doctor_group)
+        elif self.type == self.Types.USER:
+            self.groups.add(user_group)

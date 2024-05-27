@@ -14,6 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
         # depth = 2
 
     def create(self, validated_data):
+        # print(validated_data['type'])
+        if validated_data['type']=='ADMIN':
+            user = User.objects.create_superuser(**validated_data)
+            return user
         user = User.objects.create_user(**validated_data)
         return user
 

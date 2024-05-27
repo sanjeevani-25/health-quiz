@@ -3,13 +3,14 @@ from rest_framework import serializers
 # from .errorhandler import ErrorHandler
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Options
         fields = ('uid', 'option_name', 'is_correct', 'archived')
-
 
 class QuestionSerializer(serializers.ModelSerializer):
     # options = serializers.StringRelatedField(many=True)
@@ -30,16 +31,29 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class QuizSerializer(serializers.ModelSerializer):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     questions = QuestionSerializer(many=True)
 
+    # def get_object(self):
+    #     obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
+    #     self.check_object_permissions(self.request, obj)
+    #     print(self.check_object_permissions(self.request, obj))
+    #     return obj
+    
     def validate_created_by(self, value):
-        # print(value.role)
-        if (value.role == 'User'):
+        print(value)
+        # print(value.has_perm("quiz.add_quiz")==False)
+        if(value.has_perm("quiz.add_quiz")==False):
+        # if value.groups.filter(name='User').exists():
             raise ValidationError("You are not authorized to create quiz")
+            # return Response({"message":"you are not authorized"})
+        # if (value.role == 'User'):
+        #     raise ValidationError("You are not authorized to create quiz")
         return value
 
     def validate(self, data):
+        # print(type(data))
+        # data['created_by']=self.request.user.uid
         num_ques = data['number_of_questions']
         ques_list = data['questions']
         if (num_ques != len(ques_list)):
@@ -108,5 +122,5 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ('uid', 'quiz_title', 'created_by', 'time_duration',
+        fields = ('uid', 'quiz_title','created_by', 'time_duration',
                   'questions', 'number_of_questions', 'archived')
