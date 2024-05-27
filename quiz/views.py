@@ -27,12 +27,15 @@ class QuizViewset(ModelViewSet):
 
 # archive quizes
     def destroy(self, request, pk):
-
+        if not self.request.user.has_perm('yourapp.delete_quiz'):
+            return Response({"message": "You don't have permission to delete this quiz"}, status=status.HTTP_400_BAD_REQUEST)
         # print(request.data)
         # print(quiz.created_by)
         quiz = Quiz.objects.get(pk=pk)
         if request.user!=quiz.created_by:
             return Response({"message": "You are not authorized to delete this quiz."}, status=status.HTTP_400_BAD_REQUEST)
+        if quiz.archived:
+            return Response({"message": "Quiz already deleted"}, status=status.HTTP_400_BAD_REQUEST)
         quiz.archived = True
         quiz.save()
         # questions_data = request.data['questions']
