@@ -98,8 +98,9 @@ class ScheduledEventViewSet(ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request,pk):
-        # print(request.data)
         instance = self.get_object()
+        # if instance.doctor != self.request.user:
+        #     return Response({"msg":"Not authorized"})
         data =request.data
         data['doctor']=self.request.user.uid
         serializer = self.get_serializer(instance, data=data)
@@ -125,3 +126,10 @@ class ScheduledEventViewSet(ModelViewSet):
         #     return Response({"message":"You don't have any scheduled quiz"})
 
         return queryset
+
+    def destroy(self,request,pk):
+        event = self.get_object()
+        # print(event)
+        event.archived=True
+        event.save()
+        return Response({f"Event archived"})

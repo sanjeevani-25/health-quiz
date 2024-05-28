@@ -165,3 +165,4 @@ class ScheduledEventSerializer(serializers.ModelSerializer):
         # print(quiz.created_by.uid)
         event = ScheduledEvent.objects.create(doctor_id=doctor.uid, user_id=user.uid, quiz_id=quiz.uid, **validated_data)
         return event
+
