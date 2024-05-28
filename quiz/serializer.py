@@ -140,9 +140,6 @@ class QuizSerializer(serializers.ModelSerializer):
 
 
 class ScheduledEventSerializer(serializers.ModelSerializer):
-    # doctor = UserSerializer(read_only=True)
-    # user = UserSerializer(read_only=True)
-    # quiz = QuizSerializer(read_only=True)
 
     class Meta:
         model = ScheduledEvent
@@ -166,3 +163,4 @@ class ScheduledEventSerializer(serializers.ModelSerializer):
         event = ScheduledEvent.objects.create(doctor_id=doctor.uid, user_id=user.uid, quiz_id=quiz.uid, **validated_data)
         return event
 
+class QuizPerformance
