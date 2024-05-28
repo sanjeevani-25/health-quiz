@@ -27,7 +27,7 @@ class QuizViewset(ModelViewSet):
 
 # archive quizes
     def destroy(self, request, pk):
-        if not self.request.user.has_perm('yourapp.delete_quiz'):
+        if not self.request.user.has_perm('quiz.delete_quiz'):
             return Response({"message": "You don't have permission to delete this quiz"}, status=status.HTTP_400_BAD_REQUEST)
         # print(request.data)
         # print(quiz.created_by)
@@ -50,7 +50,7 @@ class QuizViewset(ModelViewSet):
             for option_data in options_data:
                 option_data.archived = True
                 option_data.save()
-        #         # print(option.archived)
+                # print(option.archived)
 
         return Response({"message": "destroy method","quiz":quiz.uid},status=status.HTTP_200_OK)
 
@@ -61,10 +61,11 @@ class QuizViewset(ModelViewSet):
         data = request.data
         user = User.objects.get(pk=request.user.uid)
         data['created_by'] = user.uid
-
+        print("views data",data)
         # print(data)
         serializer = QuizSerializer(data=data)
         if serializer.is_valid():
+            print("sssssss ",serializer)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -72,11 +73,55 @@ class QuizViewset(ModelViewSet):
     def get_queryset(self):
         # Filter quizzes to only those that belong to the authenticated user and are not archived
         # print(self.request.user.uid)
-        if (self.request.user.type=='Admin'):
+        if (self.request.user.type=='ADMIN' or self.request.user.type=='USER'):
             return Quiz.objects.all()
         return Quiz.objects.filter(created_by=self.request.user.uid, archived=False)
-
 
 class OptionViewset(ModelViewSet):
     queryset = Options.objects.all()
     serializer_class = OptionSerializer
+
+class ScheduledEventViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = ScheduledEvent.objects.all()
+    serializer_class = ScheduledEventSerializer
+
+    def create(self, request):
+        print(request.data)
+        data = request.data
+        data['doctor']=self.request.user.uid
+        
+        serializer = ScheduledEventSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request,pk):
+        # print(request.data)
+        instance = self.get_object()
+        data =request.data
+        data['doctor']=self.request.user.uid
+        serializer = self.get_serializer(instance, data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if user.type =='DOCTOR':
+            queryset = queryset.filter(doctor=user.uid)
+            # print(queryset.count())
+        elif user.type=='USER':
+            queryset = queryset.filter(user=user.uid)
+        else:
+            raise ValidationError("You are admin")
+        #     return Response({"message":"You are admin"})
+        
+        if queryset.count()==0:
+            raise ValidationError("You don't have any scheduled quiz")
+        #     return Response({"message":"You don't have any scheduled quiz"})
+
+        return queryset

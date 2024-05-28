@@ -1,4 +1,5 @@
 from .models import *
+from roles.serializer import *
 from rest_framework import serializers
 # from .errorhandler import ErrorHandler
 from rest_framework import status
@@ -33,15 +34,19 @@ class QuestionSerializer(serializers.ModelSerializer):
 class QuizSerializer(serializers.ModelSerializer):
     permission_classes = [IsAuthenticated]
     questions = QuestionSerializer(many=True)
+    # created_by = serializers.SerializerMethodField()
 
     # def get_object(self):
     #     obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
     #     self.check_object_permissions(self.request, obj)
     #     print(self.check_object_permissions(self.request, obj))
     #     return obj
+    def get_created_by(self, obj):
+        print("obj ",obj)
+        return obj.created_by.get_full_name()  
     
     def validate_created_by(self, value):
-        # print(value)
+        print("created_ by ",value)
         # print(value.has_perm("quiz.add_quiz")==False)
         # if(value.has_perm("quiz.add_quiz")==False):
         if value.groups.filter(name='User').exists():
@@ -52,6 +57,7 @@ class QuizSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+        print("data ", data)
         # print(type(data))
         # data['created_by']=self.request.user.uid
         num_ques = data['number_of_questions']
@@ -68,11 +74,14 @@ class QuizSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-
+        # print("csgdyfgyudshg")
+        # print("valid data ", validated_data)
+        # validated_data['created_by']= User.objects.get(pk=self.user.uid).uid
         # print(type(validated_data.get('created_by').role.get_rolenum()))
         questions_data = validated_data.pop('questions')
+        print("validd",validated_data)
         quiz = Quiz.objects.create(**validated_data)
-        # print(quiz)
+        print("quiz",quiz)
         for ques_data in questions_data:
             # print(ques_data)
             options_data = ques_data.pop('options')
@@ -128,3 +137,31 @@ class QuizSerializer(serializers.ModelSerializer):
         model = Quiz
         fields = ('uid', 'quiz_title','created_by', 'time_duration',
                   'questions', 'number_of_questions', 'archived')
+
+
+class ScheduledEventSerializer(serializers.ModelSerializer):
+    # doctor = UserSerializer(read_only=True)
+    # user = UserSerializer(read_only=True)
+    # quiz = QuizSerializer(read_only=True)
+
+    class Meta:
+        model = ScheduledEvent
+        fields = [ 'doctor','user', 'quiz', 'is_cancelled']
+        # fields='__all__'
+
+    def create(self, validated_data):
+        print(validated_data)
+        doctor = validated_data.pop('doctor')
+        print(doctor.uid)
+        if doctor.type!='DOCTOR':
+            raise ValidationError("You are not authorised to create event (not a doc)")
+        user = User.objects.get(email=validated_data.pop('user'))
+        if user.type!='USER':
+            raise ValidationError("user is not a user (instead doc or admin).")
+        # print(validated_data.get('quiz').uid)
+        quiz = validated_data.pop('quiz')
+        if quiz.created_by.uid != doctor.uid:
+            raise ValidationError("You have not created this quiz.")
+        # print(quiz.created_by.uid)
+        event = ScheduledEvent.objects.create(doctor_id=doctor.uid, user_id=user.uid, quiz_id=quiz.uid, **validated_data)
+        return event

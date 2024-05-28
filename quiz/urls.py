@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register('quiz', QuizViewset)
 router.register('questions', QuestionViewset)
 router.register('options', OptionViewset)
-
+router.register('scheduled-event',ScheduledEventViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

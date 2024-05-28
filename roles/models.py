@@ -97,3 +97,6 @@ class User(AbstractUser,PermissionsMixin):
             self.groups.add(doctor_group)
         elif self.type == self.Types.USER:
             self.groups.add(user_group)
+    
+    def get_full_name(self):
+        return f"{self.first_name}-{self.last_name}"
