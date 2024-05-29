@@ -14,6 +14,7 @@ router.register('quiz-performance-of-user',QuizPerformanceOfUser, basename='quiz
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('celery/<str:pk>/',generate_pdf)
     # path('quiz-filtered/',FilteredQuiz)
 ]
 
@@ -27,8 +28,8 @@ urlpatterns = [
 # delete quiz
 # save quiz performance
 # get-filtered-quiz (filter by doctor and (category or title))
-get total performance of user
-get detailed quiz performance of user
+# get total performance of user
+# get detailed quiz performance of user
 #### get list of quiz events completed  by therapist
 #### apply filter to get overall performance of students
 '''

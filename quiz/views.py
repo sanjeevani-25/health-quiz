@@ -2,12 +2,14 @@ from rest_framework.viewsets import ModelViewSet
 from .models import *
 from .serializer import *
 from rest_framework.response import Response
+from django.http import HttpResponse
+
 # from rest_framework.authentication import JWT
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework import status
-
+from .tasks import *
 
 class QuestionViewset(ModelViewSet):
     queryset = Questions.objects.all()
@@ -216,8 +218,57 @@ class QuizPerformanceOfUser(ModelViewSet):
         queryset = QuizPerformance.objects.filter(event__user=user)
         return queryset
     
-    # def retrieve(self, request,pk):
-    #     # print("chjgd")
-    #     return QuizPerformance.objects.get(event=pk)
+    def retrieve(self, request,pk):
+        # print("chjgd")
+        user = self.request.data['user']
+        # print(user)
+        serializer = QuizPerformanceSerializer(QuizPerformance.objects.filter(event__user=user).get(event=pk))
+        return Response(serializer.data)
+
+    # def create(self, request):
+    #     pass
     
 
+def generate_pdf(request,pk):
+    response = FileResponse(generate_pdf_file(pk), 
+                            as_attachment=True, 
+                            filename='book_catalog.pdf')
+    # response = generate_pdf_file(pk)
+    return response
+
+def generate_pdf_file(pk):
+    
+    from io import BytesIO
+ 
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer)
+ 
+    quiz_performance = QuizPerformance.objects.get(uid=pk)
+    y=750
+    p.drawString(100, y, "Quiz Performance of User")
+
+    user = quiz_performance.event.user 
+    # print(user)
+    p.drawString(100, y-40, f"User --> {user}")
+    p.drawString(100, y-50, f"Question --> {quiz_performance.question}")
+    options = Options.objects.filter(question=quiz_performance.question.uid)
+    correct_option = None
+    yvar=70
+    i=1
+    for option in options:
+        p.drawString(100, y-yvar, f"{i}. {option}")
+        if option.is_correct:
+            correct_option = option
+        # print(option)
+        i+=1
+        yvar+=10
+    p.drawString(100, y-120, f"Your answer: {quiz_performance.user_answer}" )
+    p.drawString(100, y-130, f"Correct answer: {correct_option}" )
+    p.showPage()
+    p.save()
+ 
+    buffer.seek(0)
+    return buffer
+    # print("test celery")
+    # # print("result ",result)
+    # return HttpResponse({"celery test"})
