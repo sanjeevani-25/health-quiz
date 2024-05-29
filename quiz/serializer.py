@@ -140,13 +140,10 @@ class QuizSerializer(serializers.ModelSerializer):
 
 
 class ScheduledEventSerializer(serializers.ModelSerializer):
-    # doctor = UserSerializer(read_only=True)
-    # user = UserSerializer(read_only=True)
-    # quiz = QuizSerializer(read_only=True)
 
     class Meta:
         model = ScheduledEvent
-        fields = [ 'doctor','user', 'quiz', 'is_cancelled']
+        fields = ['uid', 'doctor','user', 'quiz', 'is_cancelled']
         # fields='__all__'
 
     def create(self, validated_data):
@@ -166,3 +163,32 @@ class ScheduledEventSerializer(serializers.ModelSerializer):
         event = ScheduledEvent.objects.create(doctor_id=doctor.uid, user_id=user.uid, quiz_id=quiz.uid, **validated_data)
         return event
 
+class QuizPerformanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizPerformance
+        fields = '__all__'
+        depth = 2
+    
+    def validate(self, data):
+        event = data['event']
+
+        try:
+            question = event.quiz.questions.get(uid=data['question'].uid)
+            option = question.options.get(uid=data['user_answer'].uid)
+
+        except Questions.DoesNotExist:
+            raise ValidationError("Question not present in quiz assigned to event.")
+
+        except Options.DoesNotExist:
+            raise ValidationError("Option not present in assigned Question.")
+
+        return data
+    
+    def create(self,data):
+        # print("valid ", data)
+        event = data['event']
+        question = event.quiz.questions.get(uid = data['question'].uid)
+        option = question.options.get(uid = data['user_answer'].uid)
+        data['is_correct'] = option.is_correct
+        performance = QuizPerformance.objects.create(**data)
+        return performance
