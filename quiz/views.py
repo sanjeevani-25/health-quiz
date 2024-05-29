@@ -61,11 +61,11 @@ class QuizViewset(ModelViewSet):
         data = request.data
         user = User.objects.get(pk=request.user.uid)
         data['created_by'] = user.uid
-        print("views data",data)
+        # print("views data",data)
         # print(data)
         serializer = QuizSerializer(data=data)
         if serializer.is_valid():
-            print("sssssss ",serializer)
+            # print("sssssss ",serializer)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -141,8 +141,17 @@ class QuizPerformanceViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = QuizPerformance.objects.filter(event__doctor=user)
+        print(user.type)
+        if user.type=='DOCTOR':
+            queryset = QuizPerformance.objects.filter(event__doctor=user)
+        elif user.type=='USER':
+            queryset = QuizPerformance.objects.filter(event__user=user)
         return queryset
+    
+
+    def retrieve(self, request, pk):
+        # queryset = self.get_queryset()
+        return QuizPerformance.objects.get(uid=pk)
     
     def create(self,request):
         print(request.data)
@@ -161,3 +170,54 @@ class QuizPerformanceViewset(ModelViewSet):
         qp.archived=True
         qp.save()
         return Response({f"Quiz performance archived"})
+
+class QuizFilteredViewset(ModelViewSet):
+    # permission_classes = [IsAuthenticated]
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
+
+    def get_queryset(self):
+        data = self.request.data
+
+        try:
+            doctor = data['doctor']
+        except KeyError:
+            raise ValidationError("Doctor field is required.")
+        
+        if 'quiz_title' in data and 'category' in data:
+            quiz_title = data['quiz_title']
+            category = data['category']
+            print("all")
+            queryset = Quiz.objects.filter(quiz_title=quiz_title,category=category, created_by=doctor)
+        elif 'quiz_title' in data:
+            print("all q")
+            quiz_title = data['quiz_title']
+            queryset = Quiz.objects.filter(quiz_title=quiz_title, created_by=doctor)
+        elif 'category' in data:
+            category = data['category']
+            queryset = Quiz.objects.filter(category=category, created_by=doctor)
+        else:
+            raise ValidationError("Enter either quiz title or category of the quiz.")
+
+        return queryset
+
+
+class QuizPerformanceOfUser(ModelViewSet):
+    # permission_classes = [IsAuthenticated]
+    queryset = QuizPerformance.objects.all()
+    serializer_class = QuizPerformanceSerializer
+
+    def get_queryset(self):
+        # print(self.request.data)
+        user = self.request.data['user']
+        # user = self.request.user
+        # print(user)
+
+        queryset = QuizPerformance.objects.filter(event__user=user)
+        return queryset
+    
+    # def retrieve(self, request,pk):
+    #     # print("chjgd")
+    #     return QuizPerformance.objects.get(event=pk)
+    
+
