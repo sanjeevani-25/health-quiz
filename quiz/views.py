@@ -3,6 +3,7 @@ from .models import *
 from .serializer import *
 from rest_framework.response import Response
 from django.http import HttpResponse
+from reportlab.pdfgen import canvas
 
 # from rest_framework.authentication import JWT
 from rest_framework.permissions import IsAuthenticated
@@ -228,20 +229,31 @@ class QuizPerformanceOfUser(ModelViewSet):
     # def create(self, request):
     #     pass
     
+from celery import shared_task
+from celery.result import AsyncResult
 
 def generate_pdf(request,pk):
+
+    # res = generate_pdf_file.apply_async(args=[pk])
+    res = generate_pdf_file.delay(pk)
+    # ress = AsyncResult(res)
     response = FileResponse(generate_pdf_file(pk), 
                             as_attachment=True, 
-                            filename='book_catalog.pdf')
-    # response = generate_pdf_file(pk)
+                            filename=f'{pk}.pdf')
     return response
 
+@shared_task
 def generate_pdf_file(pk):
-    
+    print("shared taskkkkk")
+    # sleep(20)
+    # response = HttpResponse(content_type='application/pdf')  
+    # response['Content-Disposition'] = 'attachment; filename=f"{pk}.pdf"'  
+
     from io import BytesIO
  
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
+    # p= canvas.Canvas(response)
  
     quiz_performance = QuizPerformance.objects.get(uid=pk)
     y=750
@@ -266,9 +278,14 @@ def generate_pdf_file(pk):
     p.drawString(100, y-130, f"Correct answer: {correct_option}" )
     p.showPage()
     p.save()
- 
+    
+    # return response
     buffer.seek(0)
     return buffer
+
+    # return FileResponse(buffer, 
+    #                         as_attachment=True, 
+    #                         filename=f'{pk}.pdf')
     # print("test celery")
     # # print("result ",result)
     # return HttpResponse({"celery test"})
