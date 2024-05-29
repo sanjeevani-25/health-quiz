@@ -140,14 +140,8 @@ class QuizPerformanceViewset(ModelViewSet):
     serializer_class = QuizPerformanceSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
         user = self.request.user
-        # events=ScheduledEvent.objects.filter(doctor=user)
-        # for event in events:
-        #     quiz_p = QuizPerformance.objects.get(event=event)
-        queryset = ScheduledEvent.objects.filter(doctor=user).select_related('quiz').prefetch_related('quiz_performance')
-
-        # print(type(queryset))
+        queryset = QuizPerformance.objects.filter(event__doctor=user)
         return queryset
     
     def create(self,request):
@@ -158,3 +152,12 @@ class QuizPerformanceViewset(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self,request,pk):
+        pass
+
+    def destroy(self,request,pk):
+        qp = self.get_object()
+        qp.archived=True
+        qp.save()
+        return Response({f"Quiz performance archived"})
