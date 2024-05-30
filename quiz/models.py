@@ -26,7 +26,7 @@ class Quiz(BaseModel):
         User, on_delete=models.CASCADE, related_name='quizes')
     quiz_title = models.CharField(max_length=100)
     number_of_questions = models.IntegerField(null=True)
-    category = models.CharField(max_length=50, choices=CATEGORIES)
+    category = models.CharField(max_length=50, choices=CATEGORIES, default='E')
     time_duration = models.TimeField(auto_now=False, auto_now_add=False)
     '''
     '%H:%M:%S',     # '14:30:59'           '%H:%M',        # '14:30'
@@ -84,7 +84,7 @@ class QuizPerformance(BaseModel):
     question = models.ForeignKey(Questions, on_delete=models.CASCADE, related_name='quiz_performance_ques')
     user_answer = models.ForeignKey(Options, on_delete=models.CASCADE , related_name='selected_option')
     is_correct = models.BooleanField(default=False)
-    
+
     class Meta:
         db_table = 'QUIZ_PERFORMANCE'
     '''event id -- unique 

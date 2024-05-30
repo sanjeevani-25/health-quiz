@@ -136,7 +136,7 @@ class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         fields = ('uid', 'quiz_title','created_by', 'time_duration',
-                  'questions', 'number_of_questions', 'archived')
+                  'questions', 'number_of_questions', 'archived', 'category')
 
 
 class ScheduledEventSerializer(serializers.ModelSerializer):
@@ -167,9 +167,10 @@ class QuizPerformanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizPerformance
         fields = '__all__'
-        depth = 2
+        # depth = 2
     
     def validate(self, data):
+        # print("data ",data)
         event = data['event']
 
         try:
@@ -186,9 +187,12 @@ class QuizPerformanceSerializer(serializers.ModelSerializer):
     
     def create(self,data):
         # print("valid ", data)
+        # print("data ",data)
         event = data['event']
         question = event.quiz.questions.get(uid = data['question'].uid)
         option = question.options.get(uid = data['user_answer'].uid)
         data['is_correct'] = option.is_correct
         performance = QuizPerformance.objects.create(**data)
         return performance
+
+
