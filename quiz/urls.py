@@ -14,7 +14,6 @@ router.register('quiz-performance-of-user',QuizPerformanceOfUser, basename='quiz
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('celery/<str:pk>/',generate_pdf)
     # path('quiz-filtered/',FilteredQuiz)
 ]
 

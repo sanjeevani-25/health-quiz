@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from .models import *
 from .serializer import *
 from rest_framework.response import Response
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from reportlab.pdfgen import canvas
 
 # from rest_framework.authentication import JWT
@@ -205,87 +205,38 @@ class QuizFilteredViewset(ModelViewSet):
         return queryset
 
 
+
 class QuizPerformanceOfUser(ModelViewSet):
-    # permission_classes = [IsAuthenticated]
     queryset = QuizPerformance.objects.all()
     serializer_class = QuizPerformanceSerializer
 
-    def get_queryset(self):
-        # print(self.request.data)
-        user = self.request.data['user']
-        # user = self.request.user
-        # print(user)
+    # def get_queryset(self):
+    #     # print(self.request.data)
+    #     user = self.request.data['user']
+    #     # user = self.request.user
+    #     # print(user)
 
-        queryset = QuizPerformance.objects.filter(event__user=user)
-        return queryset
+    #     queryset = QuizPerformance.objects.filter(event__user=user)
+    #     return queryset
     
-    def retrieve(self, request,pk):
-        # print("chjgd")
-        user = self.request.data['user']
-        # print(user)
-        serializer = QuizPerformanceSerializer(QuizPerformance.objects.filter(event__user=user).get(event=pk))
-        return Response(serializer.data)
+    def retrieve(self,request,pk):
 
-    # def create(self, request):
-    #     pass
-    
-from celery import shared_task
-from celery.result import AsyncResult
+        serializer = QuizPerformanceSerializer(QuizPerformance.objects.get(uid=pk))
 
-def generate_pdf(request,pk):
+        res = generate_pdf_file.delay(pk)
 
-    # res = generate_pdf_file.apply_async(args=[pk])
-    res = generate_pdf_file.delay(pk)
-    # ress = AsyncResult(res)
-    response = FileResponse(generate_pdf_file(pk), 
-                            as_attachment=True, 
-                            filename=f'{pk}.pdf')
-    return response
+        return Response({"data":serializer.data}, status=status.HTTP_200_OK)
 
-@shared_task
-def generate_pdf_file(pk):
-    print("shared taskkkkk")
-    # sleep(20)
-    # response = HttpResponse(content_type='application/pdf')  
-    # response['Content-Disposition'] = 'attachment; filename=f"{pk}.pdf"'  
 
-    from io import BytesIO
- 
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer)
-    # p= canvas.Canvas(response)
- 
-    quiz_performance = QuizPerformance.objects.get(uid=pk)
-    y=750
-    p.drawString(100, y, "Quiz Performance of User")
 
-    user = quiz_performance.event.user 
-    # print(user)
-    p.drawString(100, y-40, f"User --> {user}")
-    p.drawString(100, y-50, f"Question --> {quiz_performance.question}")
-    options = Options.objects.filter(question=quiz_performance.question.uid)
-    correct_option = None
-    yvar=70
-    i=1
-    for option in options:
-        p.drawString(100, y-yvar, f"{i}. {option}")
-        if option.is_correct:
-            correct_option = option
-        # print(option)
-        i+=1
-        yvar+=10
-    p.drawString(100, y-120, f"Your answer: {quiz_performance.user_answer}" )
-    p.drawString(100, y-130, f"Correct answer: {correct_option}" )
-    p.showPage()
-    p.save()
-    
-    # return response
-    buffer.seek(0)
-    return buffer
 
-    # return FileResponse(buffer, 
-    #                         as_attachment=True, 
-    #                         filename=f'{pk}.pdf')
-    # print("test celery")
-    # # print("result ",result)
-    # return HttpResponse({"celery test"})
+# def check_pdf_status(request, task_id):
+#     # sleep(20)
+#     res = AsyncResult(task_id)
+#     if res.state == 'SUCCESS':
+#         output_path = res.result
+#         if os.path.exists(output_path):
+#             return FileResponse(open(output_path, 'rb'), as_attachment=True, filename=f'{task_id}.pdf')
+#     elif res.state == 'FAILURE':
+#         return JsonResponse({'status': 'failed', 'error': str(res.result)})
+#     return JsonResponse({'status': res.state})
