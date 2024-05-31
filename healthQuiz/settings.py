@@ -54,14 +54,15 @@ INSTALLED_APPS = [
     'quiz',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_celery_beat'
+    'django_celery_beat',
+    'django_celery_results'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -135,6 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+from django.utils import timezone
 
 
 # Internationalization
@@ -170,8 +172,26 @@ SIMPLE_JWT = {
 }
 
 # Celery Configuration Options
+CELERY_IMPORTS = ("quiz.tasks")
 CELERY_TIMEZONE = "Asia/Kolkata"
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
 # CELERY_TASK_TRACK_STARTED = True
 # CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BEAT_SCHEDULE = {
+#       'add-every-30-seconds': {
+#         'task': 'tasks.create_event',
+#         'schedule': 30.0,
+#         'args': ("f3a8d7b25d894bfabf02463a0051cba2", 'f83384ccf2764b34b8c91ac19ea3eb3d','f1953f3519ab47548e8e6ed98fef7568', False)
+#     },
+# }
+
+'''
+commands
+
+celery -A healthQuiz worker -l info
+celery -A healthQuiz beat -l info
+
+'''

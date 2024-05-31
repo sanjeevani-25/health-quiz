@@ -228,6 +228,17 @@ class QuizPerformanceOfUser(ModelViewSet):
         return Response({"data":serializer.data}, status=status.HTTP_200_OK)
 
 
+class ScheduleEventTimedView(APIView):
+    def post(self, request):
+        print(request.data)
+        data = request.data
+        doc_id = data['doctor']
+        user_id = data['user']
+        quiz_id = data['quiz']
+        is_cancelled = data['is_cancelled']
+  
+        create_event.apply_async(args=[doc_id, user_id, quiz_id, is_cancelled])
+        return Response({'status': 'Event creation scheduled'}, status=status.HTTP_201_CREATED)
 
 
 # def check_pdf_status(request, task_id):
