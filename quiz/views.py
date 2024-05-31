@@ -190,10 +190,10 @@ class QuizFilteredViewset(ModelViewSet):
         if 'quiz_title' in data and 'category' in data:
             quiz_title = data['quiz_title']
             category = data['category']
-            print("all")
+            # print("all")
             queryset = Quiz.objects.filter(quiz_title=quiz_title,category=category, created_by=doctor)
         elif 'quiz_title' in data:
-            print("all q")
+            # print("all q")
             quiz_title = data['quiz_title']
             queryset = Quiz.objects.filter(quiz_title=quiz_title, created_by=doctor)
         elif 'category' in data:
@@ -223,7 +223,8 @@ class QuizPerformanceOfUser(ModelViewSet):
 
         serializer = QuizPerformanceSerializer(QuizPerformance.objects.get(uid=pk))
 
-        res = generate_pdf_file.delay(pk)
+        # res = generate_pdf_file.delay(pk)
+        res= generate_pdf2.delay(pk)
 
         return Response({"data":serializer.data}, status=status.HTTP_200_OK)
 

@@ -79,14 +79,15 @@ class ScheduledEvent(BaseModel):
     doc id student id, quiz id, is cancelled'''
 
 class QuizPerformance(BaseModel):
-    # event_id = models.ForeignKey(ScheduledEvent, on_delete=models.CASCADE, related_name='quiz_performance', unique=True)
-    event = models.OneToOneField(ScheduledEvent,on_delete=models.CASCADE, related_name='quiz_performance')
+    event = models.ForeignKey(ScheduledEvent, on_delete=models.CASCADE, related_name='quiz_performance')
+    # event = models.OneToOneField(ScheduledEvent,on_delete=models.CASCADE, related_name='quiz_performance')
     question = models.ForeignKey(Questions, on_delete=models.CASCADE, related_name='quiz_performance_ques')
     user_answer = models.ForeignKey(Options, on_delete=models.CASCADE , related_name='selected_option')
     is_correct = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'QUIZ_PERFORMANCE'
+        # unique_together = (('event'), ('question'))
     '''event id -- unique 
     appointment 
     doc id -- user id
