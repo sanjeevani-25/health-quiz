@@ -11,9 +11,11 @@ router.register('scheduled-event',ScheduledEventViewSet)
 router.register('quiz-performance',QuizPerformanceViewset)
 router.register('quiz-filtered',QuizFilteredViewset, basename='quiz-filtered')
 router.register('quiz-performance-of-user',QuizPerformanceOfUser, basename='quiz-performance-of-user')
+# router.register('schedule_event_timed',ScheduleEventTimedView, basename='schedule_event_timed')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('schedule_event_timed/', ScheduleEventTimedView.as_view(), name='schedule_event_timed')
     # path('quiz-filtered/',FilteredQuiz)
 ]
 
