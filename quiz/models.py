@@ -87,7 +87,7 @@ class QuizPerformance(BaseModel):
 
     class Meta:
         db_table = 'QUIZ_PERFORMANCE'
-        # unique_together = (('event'), ('question'))
+        unique_together = (('event'), ('question'))
     '''event id -- unique 
     appointment 
     doc id -- user id
