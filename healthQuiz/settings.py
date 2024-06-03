@@ -171,6 +171,17 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'uid'
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'sanjeevani.bl04@gmail.com' # use any valid webmail address
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = 'pvss wmbm ogdy rrdn'
+EMAIL_PORT = 587
+# EMAIL_USE_SSL = True
+EMAIL_USE_TLS = True
+# ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+
 # Celery Configuration Options
 CELERY_IMPORTS = ("quiz.tasks")
 CELERY_TIMEZONE = "Asia/Kolkata"
