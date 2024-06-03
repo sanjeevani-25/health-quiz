@@ -1,7 +1,8 @@
 .env
 # venv/**
-/venv
-**/migrations/*
+venv/
+
+**/migrations/
 !**/migrations/__init__.py
-**/__pycache__/
+*/__pycache__/
 
