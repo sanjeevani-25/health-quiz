@@ -21,3 +21,10 @@ class ChatConsumer(WebsocketConsumer):
         message = text_data_json["message"]
 
         print('Msg: ',message)
+
+    # send msg back to client whenever we receive a msg
+    # json dumps is used to add type for frontend 
+        self.send(text_data=json.dumps({
+            "type": 'chat', 
+            "message": message
+        }))
