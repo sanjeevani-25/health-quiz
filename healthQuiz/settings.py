@@ -93,6 +93,12 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'healthQuiz.wsgi.application'
 ASGI_APPLICATION = 'healthQuiz.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default':{
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -206,5 +212,6 @@ commands
 
 celery -A healthQuiz worker -l info
 celery -A healthQuiz beat -l info
+source venv/bin/activate 
 
 '''
