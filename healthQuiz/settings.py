@@ -44,6 +44,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'roles',
     'quiz',
+    'chatapp',
     'rest_framework',
     'rest_framework.authtoken',
     'django_celery_beat',
@@ -88,8 +90,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'healthQuiz.wsgi.application'
-
+# WSGI_APPLICATION = 'healthQuiz.wsgi.application'
+ASGI_APPLICATION = 'healthQuiz.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

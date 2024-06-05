@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOBBY</title>
+</head>
+<body>
+    <h1>Let's chatttt</h1>
+    <form id="form">
+        <input type="text"name="message">
+    </form>
+    <script type="text/javascript">
+        let url = `ws://${window.location.host}/ws/socket-server/`
+        const chatSocket = new WebSocket(url)
+
+        // when server sends msg from backend
+        chatSocket.onmessage = function(msg) {
+            let data =  JSON.parse(msg.data)
+            console.log("message ",data)
+        }
+
+        let form = document.getElementById("form")
+        form.addEventListener('submit', (e)=>{
+            e.preventDefault()
+            let message = e.target.message.value
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }))
+            form.reset()
+        })
+
+    </script>
+</body>
+</html>
