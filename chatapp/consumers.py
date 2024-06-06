@@ -71,7 +71,6 @@ class ChatAsyncConsumer(AsyncWebsocketConsumer):
         print("channel name: ",self.channel_name)
         await self.accept()
 
-
     async def receive(self,text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
