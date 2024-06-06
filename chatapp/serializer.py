@@ -4,7 +4,7 @@ from .models import *
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fields =('group_name','user1','user2')
+        fields ='__all__'
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:

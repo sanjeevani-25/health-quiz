@@ -4,7 +4,8 @@ import uuid
 # Create your models here.
 class Conversation(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    group_name = models.UUIDField(unique=True,editable=True)
+    # group_name = models.UUIDField(unique=True,editable=True)
+    group_name = models.CharField(max_length=100)
     user1 = models.ForeignKey(User, on_delete=models.CASCADE , related_name='convo_sender')
     user2 = models.ForeignKey(User, on_delete=models.CASCADE , related_name='convo_receiver')
     created_at = models.DateTimeField(auto_now_add=True)

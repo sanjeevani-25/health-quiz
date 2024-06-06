@@ -18,7 +18,7 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         sender = self.scope['user']
         print('sender (me) : ',self.scope['user'])
-        print(sender.is_anonymous)
+        # print(sender.is_anonymous)
 
         if sender.is_anonymous:
             print("Anonymous userrrrr")
@@ -63,28 +63,43 @@ class ChatConsumer(WebsocketConsumer):
                 self.room_group_name, self.channel_name
             )
             # print("channel name: ",self.channel_name)
+
             self.accept()
 
-            self.send(json.dumps({
-                'type': 'connection_established',
-                'message': "you are now connected"
-            }))
+            self.get_previous_chats(conversation.uid)
 
+    def get_previous_chats(self, id):
+            previous_chats = Messages.objects.filter(conversation=id).order_by('-created_at')
+            
+            data = {
+                "previous_messages": self.prev_msgs(previous_chats)
+            }
+            self.send(text_data=json.dumps(data))
+
+    def prev_msgs(self, chats):
+        result=[]
+        for chat in chats:
+                result.append({
+                    'Date and time': f'{chat.created_at}',
+                    'author':chat.from_user.first_name,
+                    'message':chat.message,
+                })
+        return result
+            
     def receive(self,text_data):
-
-        # print("receive ",self)
-        # print("text_data ",text_data)
 
         sender_id = self.scope["user"].uid
         receiver_id = self.scope['url_route']['kwargs']['uid'].replace('-','')
+        conversation_id = Conversation.objects.get(group_name=self.room_group_name).uid
+
         data = {
             "from_user" : sender_id,
             "to_user" : receiver_id,
-            "conversation": self.room_group_name,
+            "conversation": conversation_id,
             "message": text_data
         }
         print(len(text_data))
-        # try:
+
         serializer = MessageSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -100,6 +115,7 @@ class ChatConsumer(WebsocketConsumer):
                 "message": text_data
             }
         )
+        self.get_previous_chats(conversation_id)
 
         ''' 
         - send msg back to client whenever we receive a msg 
@@ -115,13 +131,10 @@ class ChatConsumer(WebsocketConsumer):
         message = event['message']
 
         self.send(text_data=json.dumps({
-            # "type": 'chat', 
+            "type": 'chat', 
             "message": message
         }))
 
-    def get_receiver(id):
-        user = User.objects.get(uid=id)
-        print(user)
 
 
 class ChatAsyncConsumer(AsyncWebsocketConsumer):
