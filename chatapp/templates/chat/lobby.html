@@ -21,6 +21,7 @@
         chatSocket.onmessage = function(msg) {
             let data =  JSON.parse(msg.data)
             console.log("message ",data)
+            console.log("msg ",msg)
 
             // use of type from json dumps
             if(data.type === 'chat'){

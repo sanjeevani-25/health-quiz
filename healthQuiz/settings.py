@@ -90,7 +90,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'healthQuiz.wsgi.application'
+WSGI_APPLICATION = 'healthQuiz.wsgi.application'
 ASGI_APPLICATION = 'healthQuiz.asgi.application'
 
 CHANNEL_LAYERS = {
